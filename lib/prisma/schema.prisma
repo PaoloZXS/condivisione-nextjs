@@ -1,0 +1,212 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============ AUTHENTICATION & USERS ============
+
+model User {
+  idLogin    Int     @id @default(autoincrement())
+  nome       String?
+  cognome    String?
+  email      String  @unique
+  password   String
+  societa    String?
+  tecnicocod String?
+  attivo     String  @default("S")
+  typeutente String  @default("AMMINISTRATORE")
+  colore     String?
+
+  // Relations
+  pianningEmail PianningEmail[]
+
+  @@map("TbLogin")
+}
+
+// ============ CLIENTS & RELATIONSHIPS ============
+
+model Cliente {
+  id            Int     @id @default(autoincrement())
+  codicecliente String?
+  idazienda     Int?
+
+  // Relations
+  operazioni Operazione[]
+  prodotti   ClienteProdotto[]
+  contatti   ClienteContatto[]
+  contratti  ClienteContratto[]
+  note       ClienteNota[]
+
+  @@map("tabclienti")
+}
+
+model ClienteContatto {
+  id        Int     @id @default(autoincrement())
+  idcliente Int
+  cliente   Cliente @relation(fields: [idcliente], references: [id], onDelete: Cascade)
+
+  @@map("tabclienticontatti")
+}
+
+model ClienteContratto {
+  id        Int     @id @default(autoincrement())
+  idcliente Int
+  cliente   Cliente @relation(fields: [idcliente], references: [id], onDelete: Cascade)
+
+  @@map("tabclienticontratti")
+}
+
+model ClienteNota {
+  id        Int     @id @default(autoincrement())
+  idcliente Int
+  cliente   Cliente @relation(fields: [idcliente], references: [id], onDelete: Cascade)
+
+  @@map("tabclientinote")
+}
+
+model ClienteProdotto {
+  id         Int     @id @default(autoincrement())
+  idcliente  Int
+  cliente    Cliente @relation(fields: [idcliente], references: [id], onDelete: Cascade)
+  idprodotto Int?
+
+  @@map("tabclientiprodotti")
+}
+
+// ============ OPERATIONS & INTERVENTIONS ============
+
+model Operazione {
+  id                Int       @id @default(autoincrement())
+  datacreazione     DateTime?
+  tipo              String?
+  codice            String?
+  anno              Int?
+  idazienda         Int?
+  idcliente         Int?
+  idintervento      Int?
+  operatore         String?
+  idprodotto        Int?
+  dataesecuzione    DateTime?
+  orainizio         Int?
+  orafine           Int?
+  totaleore         Int?
+  osservazioni      String?
+  codicecliente     String?
+  stato             Int?
+  eliminato         String?
+  idprodottocliente Int?
+  faseoperazione    Int?
+
+  // Relations
+  cliente Cliente? @relation(fields: [idcliente], references: [id], onDelete: SetNull)
+
+  @@map("taboperazioni")
+}
+
+model OperazioneFirma {
+  id           Int  @id @default(autoincrement())
+  idoperazione Int?
+
+  @@map("taboperazionifirma")
+}
+
+model OperazioneDescrizazioni {
+  id           Int  @id @default(autoincrement())
+  idoperazione Int?
+
+  @@map("taboperazionidescrizioni")
+}
+
+model OperazionePutazione {
+  id           Int  @id @default(autoincrement())
+  idoperazione Int?
+
+  @@map("taboperazioniparametriinterventi")
+}
+
+// ============ PRODUCTS & CONTRACTS ============
+
+model Prodotto {
+  id   Int            @id @default(autoincrement())
+  nome String?
+  voci ProdottoVoce[]
+
+  @@map("tabprodotti")
+}
+
+model ProdottoVoce {
+  id         Int       @id @default(autoincrement())
+  idprodotto Int?
+  prodotto   Prodotto? @relation(fields: [idprodotto], references: [id], onDelete: SetNull)
+
+  @@map("tabprodottivoci")
+}
+
+model Contratto {
+  id            Int     @id @default(autoincrement())
+  tipo          Int?
+  denominazione String?
+  tipodurata    String?
+  durata        Int?
+  avvprima      Int?
+  avvdopo       Int?
+  cancellato    String?
+
+  @@map("tabcontratti")
+}
+
+// ============ PLANNING & SCHEDULING ============
+
+model PianningTipoIntervento {
+  id Int @id @default(autoincrement())
+
+  @@map("tabplanningtipointerventi")
+}
+
+model PianningEmail {
+  id      Int   @id @default(autoincrement())
+  idlogin Int?
+  user    User? @relation(fields: [idlogin], references: [idLogin], onDelete: SetNull)
+
+  @@map("tabplanningemail")
+}
+
+// ============ EXTRA TYPES & CONTROLS ============
+
+model VociIntervento {
+  id Int @id @default(autoincrement())
+
+  @@map("tabvociinterventi")
+}
+
+model Straordinario {
+  id Int @id @default(autoincrement())
+
+  @@map("tabstraordinari")
+}
+
+model InserimentoStraordinario {
+  id Int @id @default(autoincrement())
+
+  @@map("Tb_InserimentoStraordinario")
+}
+
+model ImpostazioniUtente {
+  id Int @id @default(autoincrement())
+
+  @@map("TbImpostazioniUtente")
+}
+
+model SpeseNotti {
+  id Int @id @default(autoincrement())
+
+  @@map("TbSpeseNotti")
+}
