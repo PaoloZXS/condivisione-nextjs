@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, Users, MapPin, Clock, CheckCircle } from 'lucide-react';
 import PageLayout from '@/app/components/PageLayout';
 import { Calendar as BigCalendar, dateFnsLocalizer, Event } from 'react-big-calendar';
@@ -45,7 +45,7 @@ export default function PlanningPage() {
   const [selectedTecnico, setSelectedTecnico] = useState<string>('all');
 
   // Fetch planning events
-  const fetchEvents = async (date: Date) => {
+  const fetchEvents = useCallback(async (date: Date) => {
     setLoading(true);
     try {
       // Get month boundaries
@@ -111,11 +111,11 @@ export default function PlanningPage() {
       console.error('Error fetching planning events:', error);
     }
     setLoading(false);
-  };
+  }, [selectedTecnico]);
 
   useEffect(() => {
     fetchEvents(currentDate);
-  }, [currentDate, selectedTecnico]);
+  }, [currentDate, fetchEvents]);
 
   // Event style getter for colors
   const eventStyleGetter = (event: PlanningEvent) => {

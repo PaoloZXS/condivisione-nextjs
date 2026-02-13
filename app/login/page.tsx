@@ -101,12 +101,15 @@ export default function LoginPage() {
       setError('');
       setLoading(false);
 
-      // Reindirizza alla dashboard dopo 2 secondi
-      console.log('Login riuscito, dati salvati:', data);
+      // Leggi la URL di reindirizzamento dal cookie, se presente
+      const redirectUrl = getCookie('redirectUrl') || '/dashboard';
+      eraseCookie('redirectUrl'); // Cancella il cookie dopo averlo letto
+
+      // Reindirizza dopo 1 secondo
+      console.log('Login riuscito, reindirizzamento a:', redirectUrl);
       setTimeout(() => {
-        console.log('Reindirizzamento a /dashboard');
-        window.location.href = '/dashboard';
-      }, 2000);
+        window.location.href = redirectUrl;
+      }, 1000);
     } catch (err) {
       console.error('Errore login:', err);
       setError('Errore durante il login. Riprova più tardi.');
