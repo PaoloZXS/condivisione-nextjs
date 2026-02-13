@@ -97,7 +97,24 @@ export async function GET(request: NextRequest) {
           colore: row[14],
         };
       } else {
-        return row;
+        // TURSO returns objects with exact column names, normalize to lowercase
+        return {
+          id: row.id,
+          proprietario: row.Proprietario,
+          data: row.Data,
+          tecnico: row.Tecnico,
+          codcliente: row.CodCliente,
+          cliente: row.Cliente,
+          oggetto: row.Oggetto,
+          giornataintera: row.GiornataIntera,
+          orainizio: row.OraInizio,
+          orafine: row.OraFine,
+          confermato: row.Confermato,
+          varie: row.Varie,
+          eseguito: row.eseguito,
+          privato: row.Privato,
+          colore: row.Colore || null,
+        };
       }
     });
 
