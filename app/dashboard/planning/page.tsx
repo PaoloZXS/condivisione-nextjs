@@ -260,11 +260,11 @@ export default function PlanningPage() {
             </div>
           ) : (
             <BigCalendar
+              key={`${currentDate.getFullYear()}-${currentDate.getMonth()}`}
               localizer={localizer}
               events={events}
               startAccessor='start'
               endAccessor='end'
-              date={currentDate}
               style={{ height: '100%' }}
               onSelectEvent={(event: PlanningEvent) => setSelectedEvent(event)}
               eventPropGetter={(event: PlanningEvent) => eventStyleGetter(event)}
