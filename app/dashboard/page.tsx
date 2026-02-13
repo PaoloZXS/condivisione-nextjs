@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import PageLayout from '@/app/components/PageLayout';
 
 interface User {
   id: number;
@@ -14,7 +14,6 @@ interface User {
 }
 
 export default function DashboardPage() {
-  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -36,16 +35,7 @@ export default function DashboardPage() {
       console.error('Errore parsing utente:', error);
       window.location.href = '/login';
     }
-  }, [router]);
-
-  const handleLogout = () => {
-    // Cancella i dati di sessione
-    localStorage.removeItem('utenteLoggato');
-    localStorage.removeItem('authToken');
-    
-    // Reindirizza al login
-    window.location.href = '/login';
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -63,41 +53,12 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header/Navbar */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">
-              <span className="text-blue-600">Condivisione</span>Dati
-            </h1>
-            
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">
-                  {user.nome} {user.cognome}
-                </p>
-                <p className="text-xs text-gray-500">{user.typeutente}</p>
-              </div>
-              
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Benvenuto, {user.nome}! 👋
-          </h2>
+    <PageLayout title="Dashboard" icon="📊">
+      {/* Welcome Section */}
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          Benvenuto, {user.nome}! 👋
+        </h2>
           <p className="text-gray-600">
             Questo è il nuovo sistema CondivisioneDati creato con Next.js
           </p>
@@ -170,11 +131,10 @@ export default function DashboardPage() {
             <li>Migliori performance e velocità di caricamento</li>
             <li>Supporto per dispositivi mobile</li>
             <li>Sistema di autenticazione sicuro con JWT</li>
-            <li>Integration con database PostgreSQL (producti)</li>
+            <li>Menu di navigazione con 9 sezioni principali</li>
           </ul>
         </div>
-      </main>
-    </div>
+    </PageLayout>
   );
 }
 

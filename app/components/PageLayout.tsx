@@ -1,0 +1,97 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Sidebar from '@/app/components/Sidebar';
+
+interface PageLayoutProps {
+  title: string;
+  icon: string;
+  children: React.ReactNode;
+}
+
+export default function PageLayout({ title, icon, children }: PageLayoutProps) {
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Verifica se l'utente è autenticato
+    const storedUser = localStorage.getItem('utenteLoggato');
+    
+    if (!storedUser) {
+      // Reindirizza al login se non autenticato
+      window.location.href = '/login';
+      return;
+    }
+
+    try {
+      const userData = JSON.parse(storedUser);
+      setUser(userData);
+      setLoading(false);
+    } catch (error) {
+      console.error('Errore parsing utente:', error);
+      window.location.href = '/login';
+    }
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Caricamento...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <Sidebar />
+
+      {/* Main Content */}
+      <main className="flex-1 ml-64 lg:ml-64">
+        {/* Header */}
+        <header className="bg-white shadow sticky top-0 z-39">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-3">
+                <span className="text-3xl">{icon}</span>
+                <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-900">
+                    {user.nome} {user.cognome}
+                  </p>
+                  <p className="text-xs text-gray-500">{user.typeutente}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          {children}
+        </div>
+      </main>
+
+      {/* Mobile sidebar adjustment */}
+      <style>{`
+        @media (max-width: 1024px) {
+          main {
+            margin-left: 0;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
