@@ -39,7 +39,8 @@ interface PlanningEvent extends Event {
 export default function PlanningPage() {
   const [events, setEvents] = useState<PlanningEvent[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<PlanningEvent | null>(null);
-  const [currentDate, setCurrentDate] = useState(new Date());
+  // Inizia da marzo 2007 (primo mese con dati)
+  const [currentDate, setCurrentDate] = useState(new Date(2007, 2, 1));
   const [loading, setLoading] = useState(false);
   const [allTecnici, setAllTecnici] = useState<string[]>([]);
   const [selectedTecnico, setSelectedTecnico] = useState<string>('all');
@@ -65,7 +66,10 @@ export default function PlanningPage() {
         ...(selectedTecnico !== 'all' && { tecnico: selectedTecnico }),
       });
 
-      const response = await fetch(`/api/dashboard/planning?${params}`);
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`/api/dashboard/planning?${params}`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
       const data = await response.json();
 
       if (data.events) {

@@ -3,6 +3,17 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
+    // Check authentication - token può essere nel cookie o nell'Authorization header
+    const token = request.cookies.get('authToken')?.value || 
+                  request.headers.get('Authorization')?.replace('Bearer ', '');
+    
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Unauthorized - token required' },
+        { status: 401 }
+      );
+    }
+
     // Get query parameters
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('startDate');

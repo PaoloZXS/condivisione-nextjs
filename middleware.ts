@@ -7,16 +7,19 @@ export function middleware(request: NextRequest) {
 
   // Rotte pubbliche che non richiedono autenticazione
   const publicRoutes = ['/login', '/api/auth/login', '/api/auth/recover-password'];
+  // Le API che richiedono autenticazione ma fanno il check del token direttamente
+  const apiCheckRoutes = ['/api/dashboard'];
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
+  const isApiRoute = apiCheckRoutes.some((route) => pathname.startsWith(route));
 
   // Se l'utente è autenticato e va al login, reindirizza alla dashboard
   if (token && pathname === '/login') {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  // Se l'utente non è autenticato e va a una rotta protetta, reindirizza al login
-  // MA se il pathname è /login, non reindirizzare (altrimenti loop infinito)
-  if (!token && !isPublicRoute && pathname !== '/' && pathname !== '/login') {
+  // Se l'utente non è autenticato e va a una rotta protetta (non API), reindirizza al login
+  // Le API routes fanno il check del token da sole
+  if (!token && !isPublicRoute && !isApiRoute && pathname !== '/' && pathname !== '/login') {
     // Salva la URL richiesta per il reindirizzamento post-login
     const response = NextResponse.redirect(new URL('/login', request.url));
     response.cookies.set('redirectUrl', pathname, {
