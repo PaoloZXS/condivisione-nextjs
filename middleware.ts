@@ -15,7 +15,8 @@ export function middleware(request: NextRequest) {
   }
 
   // Se l'utente non è autenticato e va a una rotta protetta, reindirizza al login
-  if (!token && !isPublicRoute && pathname !== '/') {
+  // MA se il pathname è /login, non reindirizzare (altrimenti loop infinito)
+  if (!token && !isPublicRoute && pathname !== '/' && pathname !== '/login') {
     // Salva la URL richiesta per il reindirizzamento post-login
     const response = NextResponse.redirect(new URL('/login', request.url));
     response.cookies.set('redirectUrl', pathname, {

@@ -105,11 +105,13 @@ export default function LoginPage() {
       const redirectUrl = getCookie('redirectUrl') || '/dashboard';
       eraseCookie('redirectUrl'); // Cancella il cookie dopo averlo letto
 
-      // Reindirizza dopo 1 secondo
+      // Aspetta che il cookie sia elaborato dal browser, poi reindirizza
+      // Aumentato a 2 secondi per assicurarsi che il cookie sia salvato
       console.log('Login riuscito, reindirizzamento a:', redirectUrl);
       setTimeout(() => {
-        window.location.href = redirectUrl;
-      }, 1000);
+        // Usa router.push se disponibile, altrimenti window.location
+        router.push(redirectUrl);
+      }, 2500);
     } catch (err) {
       console.error('Errore login:', err);
       setError('Errore durante il login. Riprova più tardi.');
