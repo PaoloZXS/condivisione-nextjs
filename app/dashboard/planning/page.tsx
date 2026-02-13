@@ -68,10 +68,23 @@ export default function PlanningPage() {
       });
 
       const token = localStorage.getItem('authToken');
+      console.log('📝 Token disponibile:', !!token);
       const response = await fetch(`/api/dashboard/planning?${params}`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
+      
+      console.log('📡 Status API:', response.status);
+      
+      if (!response.ok) {
+        console.error('❌ API Error:', response.status, response.statusText);
+        setLoading(false);
+        return;
+      }
+      
       const data = await response.json();
+      
+      console.log('📦 Risposta API:', data);
+      console.log('📊 Numero eventi:', data.events?.length || 0);
 
       if (data.events) {
         // Transform events for calendar
@@ -251,9 +264,7 @@ export default function PlanningPage() {
               events={events}
               startAccessor='start'
               endAccessor='end'
-              defaultDate={currentDate}
               date={currentDate}
-              onNavigate={setCurrentDate}
               style={{ height: '100%' }}
               onSelectEvent={(event: PlanningEvent) => setSelectedEvent(event)}
               eventPropGetter={(event: PlanningEvent) => eventStyleGetter(event)}

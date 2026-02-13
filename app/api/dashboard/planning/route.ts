@@ -69,11 +69,16 @@ export async function GET(request: NextRequest) {
 
     query += ` ORDER BY Data ASC`;
 
+    console.log('🔍 [API] Query:', query);
+    console.log('📊 [API] Params:', params);
+
     // Execute query using TURSO format
     const result = await client.execute({
       sql: query,
       args: params,
     });
+    
+    console.log('✅ [API] Result rows:', result.rows.length);
 
     // Format response - handle both array and object row formats
     const events = result.rows.map((row: any) => {
@@ -119,10 +124,12 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({ events });
-  } catch (error) {
-    console.error('Error fetching planning events:', error);
+  } catch (error: any) {
+    console.error('❌ [API] Error fetching planning events');
+    console.error('💥 Error message:', error?.message);
+    console.error('🔍 Full error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch planning events', details: String(error) },
+      { error: 'Failed to fetch planning events', details: error?.message },
       { status: 500 }
     );
   }
