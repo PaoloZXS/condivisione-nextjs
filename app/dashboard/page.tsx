@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import PageLayout from '@/app/components/PageLayout';
 
 interface User {
@@ -15,51 +14,47 @@ interface User {
 }
 
 export default function DashboardPage() {
-  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [isChecking, setIsChecking] = useState(true);
-  const [redirecting, setRedirecting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Verifica se l'utente è autenticato
-    const storedUser = localStorage.getItem('utenteLoggato');
-    
-    if (!storedUser) {
-      // Se non autenticato, reindirizza una sola volta
-      setRedirecting(true);
-      setTimeout(() => {
-        router.push('/login');
-      }, 0);
-      return;
-    }
+    // Controlla localStorage solo nel browser
+    if (typeof window === 'undefined') return;
 
-    try {
-      const userData = JSON.parse(storedUser);
-      setUser(userData);
-      setIsChecking(false);
-    } catch (error) {
-      console.error('Errore parsing utente:', error);
-      setRedirecting(true);
-      setTimeout(() => {
-        router.push('/login');
-      }, 0);
-    }
-  }, [router]);
+    const checkAuth = () => {
+      const storedUser = localStorage.getItem('utenteLoggato');
+      
+      if (!storedUser) {
+        // Reindirizza al login con window.location per evitare problemi
+        window.location.href = '/login';
+        return;
+      }
 
-  // Se sta reindirizzando, mostra schermata di caricamento
-  if (redirecting) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Verifica autenticazione...</p>
-        </div>
-      </div>
-    );
-  }
+      try {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Errore parsing utente:', error);
+        window.location.href = '/login';
+      }
+    };
 
-  // Se ancora sta controllando o non ha utente, mostra loading
-  if (isChecking || !user) {
+    // Esegui il check subito
+    checkAuth();
+
+    // Fallback: se dopo 2 secondi non hai utente, reindirizza forzatamente
+    const timeout = setTimeout(() => {
+      if (!user && typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+    }, 2000);
+
+    return () => clearTimeout(timeout);
+  }, [user]);
+
+  // Se sta ancora caricando, mostra loading
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -68,6 +63,10 @@ export default function DashboardPage() {
         </div>
       </div>
     );
+  }
+
+  if (!user) {
+    return null;
   }
 
   return (
@@ -106,11 +105,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Feature Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <FeatureCard 
-            icon="📋" 
-            title="Operazioni" 
-            description="Gestisci le tue operazioni e interventi"
+            icon="📊" 
+            title="Dashboard" 
+            description="Visualizza un riepilogo delle tue attività"
           />
           <FeatureCard 
             icon="👥" 
@@ -119,7 +118,7 @@ export default function DashboardPage() {
           />
           <FeatureCard 
             icon="📅" 
-            title="Calendario" 
+            title="Calendar" 
             description="Pianifica i tuoi interventi"
           />
           <FeatureCard 
