@@ -56,17 +56,20 @@ export default function PageLayout({ title, icon, children }: PageLayoutProps) {
       <Sidebar />
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 lg:ml-64">
+      <main className="flex-1 lg:ml-64 pt-16 lg:pt-0">
         {/* Header */}
-        <header className="bg-white shadow sticky top-0 z-39">
+        <header className="bg-white shadow-sm sticky top-16 lg:top-0 z-39">
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="flex justify-between items-center">
               <div className="flex items-center space-x-3">
                 <span className="text-3xl">{icon}</span>
-                <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+                  <p className="text-xs text-gray-500">Sistema CondivisioneDati</p>
+                </div>
               </div>
               
-              <div className="flex items-center space-x-4">
+              <div className="hidden md:flex items-center space-x-4">
                 <div className="text-right">
                   <p className="text-sm font-medium text-gray-900">
                     {user.nome} {user.cognome}
@@ -79,19 +82,10 @@ export default function PageLayout({ title, icon, children }: PageLayoutProps) {
         </header>
 
         {/* Page Content */}
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {children}
         </div>
       </main>
-
-      {/* Mobile sidebar adjustment */}
-      <style>{`
-        @media (max-width: 1024px) {
-          main {
-            margin-left: 0;
-          }
-        }
-      `}</style>
     </div>
   );
 }
