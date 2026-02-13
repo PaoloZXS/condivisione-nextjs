@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import PageLayout from '@/app/components/PageLayout';
 
 interface User {
@@ -14,30 +15,51 @@ interface User {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isChecking, setIsChecking] = useState(true);
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
     // Verifica se l'utente è autenticato
     const storedUser = localStorage.getItem('utenteLoggato');
     
     if (!storedUser) {
-      // Reindirizza al login se non autenticato
-      window.location.href = '/login';
+      // Se non autenticato, reindirizza una sola volta
+      setRedirecting(true);
+      setTimeout(() => {
+        router.push('/login');
+      }, 0);
       return;
     }
 
     try {
       const userData = JSON.parse(storedUser);
       setUser(userData);
-      setLoading(false);
+      setIsChecking(false);
     } catch (error) {
       console.error('Errore parsing utente:', error);
-      window.location.href = '/login';
+      setRedirecting(true);
+      setTimeout(() => {
+        router.push('/login');
+      }, 0);
     }
-  }, []);
+  }, [router]);
 
-  if (loading) {
+  // Se sta reindirizzando, mostra schermata di caricamento
+  if (redirecting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Verifica autenticazione...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Se ancora sta controllando o non ha utente, mostra loading
+  if (isChecking || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -46,10 +68,6 @@ export default function DashboardPage() {
         </div>
       </div>
     );
-  }
-
-  if (!user) {
-    return null;
   }
 
   return (
