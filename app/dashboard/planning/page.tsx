@@ -171,18 +171,45 @@ export default function PlanningPage() {
             >
               ← Precedente
             </button>
-            <input
-              type="month"
-              value={format(currentDate, 'yyyy-MM')}
+
+            {/* Year and Month Selectors */}
+            <select
+              value={currentDate.getFullYear()}
               onChange={(e) => {
-                const [year, month] = e.target.value.split('-');
-                setCurrentDate(new Date(parseInt(year), parseInt(month) - 1, 1));
+                const year = parseInt(e.target.value);
+                setCurrentDate(new Date(year, currentDate.getMonth(), 1));
               }}
               className='px-3 py-2 border border-gray-300 rounded text-sm font-medium focus:outline-none focus:border-blue-500'
-            />
+            >
+              {Array.from({ length: 25 }, (_, i) => 2007 + i).map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={currentDate.getMonth()}
+              onChange={(e) => {
+                const month = parseInt(e.target.value);
+                setCurrentDate(new Date(currentDate.getFullYear(), month, 1));
+              }}
+              className='px-3 py-2 border border-gray-300 rounded text-sm font-medium focus:outline-none focus:border-blue-500'
+            >
+              {[
+                'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+                'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
+              ].map((month, index) => (
+                <option key={index} value={index}>
+                  {month}
+                </option>
+              ))}
+            </select>
+
             <div className='px-4 py-2 bg-gray-100 rounded text-sm font-semibold'>
               {format(currentDate, 'MMMM yyyy', { locale: it })}
             </div>
+
             <button
               onClick={() => setCurrentDate(addMonths(currentDate, 1))}
               className='px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-sm font-medium'
