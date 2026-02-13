@@ -1,16 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prismaClient';
 import jwt from 'jsonwebtoken';
+import { createClient } from '@libsql/client';
 
 /**
  * POST /api/auth/login
  * 
  * Gestisce il login dell'utente
- * Sostituisce il vecchio servizio ASP.NET: servizi.asmx -> login_new
- * 
- * Controlla la tabella tblogin con email e password
- * Ritorna i dati dell'utente se validi
+ * Usa TURSO database per la produzione su Vercel
  */
+
+// Crea client TURSO per CondivisioneDati (database dove sono gli utenti)
+const getTursoClient = () => {
+  const url = process.env.DATABASE_URL_CONDIVISIONEDATI;
+  if (!url) {
+    throw new Error('DATABASE_URL_CONDIVISIONEDATI non configurato');
+  }
+  return createClient({ url });
+};
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -24,21 +31,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('[LOGIN] Attempting login for email:', email)
+    console.log('[LOGIN] Attempting login for email:', email);
 
-    // Ricerca utente nel database (dalla tabella tblogin)
-    const user = await prisma.user.findFirst({
-      where: {
-        email: email.toString().trim(),
-        password: password.toString(), // In produzione, usare bcryptjs per hash
-        attivo: 'S' // Solo utenti attivi
-      }
+    // Connetti a TURSO
+    const client = getTursoClient();
+    
+    // Ricerca utente nel database
+    const result = await client.execute({
+      sql: `SELECT * FROM tblogin WHERE email = ? AND password = ? AND attivo = 'S'`,
+      args: [email.toString().trim(), password.toString()]
     });
 
-    console.log('[LOGIN] User found:', user ? 'Yes' : 'No')
+    console.log('[LOGIN] Query result:', result);
 
     // Se l'utente non esiste o non è attivo
-    if (!user) {
+    if (!result.rows || result.rows.length === 0) {
       return NextResponse.json(
         { 
           id: 0,
@@ -48,16 +55,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Controllo se l'utente è disabilitato
-    if (user.attivo !== 'S') {
-      return NextResponse.json(
-        { 
-          id: 0,
-          error: 'Utente non abilitato all\'accesso' 
-        },
-        { status: 403 }
-      );
-    }
+    const user = result.rows[0] as any;
+    console.log('[LOGIN] User found:', user.email);
 
     // Generazione JWT token
     const token = jwt.sign(
@@ -71,13 +70,12 @@ export async function POST(request: NextRequest) {
       { expiresIn: '24h' }
     );
 
-    // Risposta con dati utente (simile al vecchio login_new)
+    // Risposta con dati utente
     const response = NextResponse.json({
       id: user.idLogin,
       nome: user.nome,
       cognome: user.cognome,
       username: user.email,
-      password: user.password, // Non mandare in produzione!
       azienda: user.societa,
       tecnico: user.tecnicocod,
       attivo: user.attivo,
@@ -97,8 +95,8 @@ export async function POST(request: NextRequest) {
     return response;
 
   } catch (error: any) {
-    console.error('[LOGIN] Error caught:', error?.message || error)
-    console.error('[LOGIN] Full error:', error)
+    console.error('[LOGIN] Error caught:', error?.message || error);
+    console.error('[LOGIN] Full error:', error);
     return NextResponse.json(
       { error: 'Errore interno del server: ' + (error instanceof Error ? error.message : String(error)) },
       { status: 500 }

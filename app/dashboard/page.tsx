@@ -24,7 +24,7 @@ export default function DashboardPage() {
     
     if (!storedUser) {
       // Reindirizza al login se non autenticato
-      router.push('/login');
+      window.location.href = '/login';
       return;
     }
 
@@ -34,7 +34,7 @@ export default function DashboardPage() {
       setLoading(false);
     } catch (error) {
       console.error('Errore parsing utente:', error);
-      router.push('/login');
+      window.location.href = '/login';
     }
   }, [router]);
 
@@ -44,7 +44,7 @@ export default function DashboardPage() {
     localStorage.removeItem('authToken');
     
     // Reindirizza al login
-    router.push('/login');
+    window.location.href = '/login';
   };
 
   if (loading) {

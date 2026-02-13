@@ -43,6 +43,7 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const [showRecovery, setShowRecovery] = useState(false);
   const [recoveryEmail, setRecoveryEmail] = useState('');
 
@@ -95,8 +96,17 @@ export default function LoginPage() {
       localStorage.setItem('utenteLoggato', JSON.stringify(data));
       localStorage.setItem('authToken', data.token);
 
-      // Reindirizza alla dashboard
-      router.push('/dashboard');
+      // Mostra messaggio di successo
+      setSuccess(true);
+      setError('');
+      setLoading(false);
+
+      // Reindirizza alla dashboard dopo 2 secondi
+      console.log('Login riuscito, dati salvati:', data);
+      setTimeout(() => {
+        console.log('Reindirizzamento a /dashboard');
+        window.location.href = '/dashboard';
+      }, 2000);
     } catch (err) {
       console.error('Errore login:', err);
       setError('Errore durante il login. Riprova più tardi.');
@@ -151,14 +161,16 @@ export default function LoginPage() {
             <p className="text-gray-500 mt-2">Sistema di gestione aziendale</p>
           </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className={`mb-4 p-3 rounded text-sm font-medium ${
-              error.includes('inviata') 
-                ? 'bg-green-100 text-green-700' 
-                : 'bg-red-100 text-red-700'
-            }`}>
-              {error}
+          {/* Success/Error Message */}
+          {success && (
+            <div className="mb-4 p-4 rounded-lg bg-green-100 text-green-700 text-sm font-medium animate-pulse">
+              ✓ Login effettuato con successo! Reindirizzamento in corso...
+            </div>
+          )}
+
+          {error && !success && (
+            <div className="mb-4 p-3 rounded text-sm font-medium bg-red-100 text-red-700">
+              ✗ {error}
             </div>
           )}
 
