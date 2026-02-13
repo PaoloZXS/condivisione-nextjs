@@ -29,68 +29,109 @@ const sqlConfig = {
   },
 };
 
-async function migrateCondivisioneDati() {
-  console.log('🚀 Migrando CondivisioneDati...');
+async function migratePlanningInterventi() {
+  console.log('🚀 Migrando PlanningInterventi da Assistenza...');
   
   try {
     // Connessione a SQL Server
     const pool = new sql.ConnectionPool(sqlConfig);
     await pool.connect();
 
-    // Query users da SQL Server
+    // Query planning events da SQL Server Assistenza
     const result = await pool.request()
-      .input('attivo', sql.Char(1), 'S')
-      .query(`SELECT * FROM CondivisioneDati.dbo.TbLogin WHERE attivo = @attivo ORDER BY idLogin`);
+      .query(`
+        SELECT 
+          Id, Proprietario, Data, Tecnico, Codcliente, Cliente, Oggetto,
+          Giornataintera, OraInizio, OraFine, Confermato, Varie, 
+          eseguito, Privato, Colore
+        FROM [Assistenza].dbo.PlanningInterventi 
+        ORDER BY Data DESC
+      `);
 
-    const users = result.recordset;
-    console.log(`✓ Trovati ${users.length} utenti su SQL Server`);
+    const events = result.recordset;
+    console.log(`✓ Trovati ${events.length} appuntamenti su SQL Server`);
 
-    // Crea tabella TbLogin su TURSO
-    await tursoDati.execute(`
-      DROP TABLE IF EXISTS tblogin
+    if (events.length === 0) {
+      console.log('⚠️  Nessun appuntamento trovato nella tabella PlanningInterventi');
+      await pool.close();
+      return;
+    }
+
+    // Crea tabella PlanningInterventi su TURSO Assistenza
+    await tursoAssistenza.execute(`
+      DROP TABLE IF EXISTS PlanningInterventi
     `);
 
-    await tursoDati.execute(`
-      CREATE TABLE tblogin (
-        idLogin INTEGER PRIMARY KEY,
-        nome TEXT NOT NULL,
-        cognome TEXT NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        societa TEXT,
-        tecnicocod TEXT,
-        attivo CHAR(1),
-        typeutente TEXT,
-        colore TEXT
+    await tursoAssistenza.execute(`
+      CREATE TABLE PlanningInterventi (
+        id INTEGER PRIMARY KEY,
+        Proprietario TEXT,
+        Data TEXT NOT NULL,
+        Tecnico TEXT,
+        Codcliente TEXT,
+        Cliente TEXT,
+        Oggetto TEXT,
+        Giornataintera TEXT,
+        OraInizio TEXT,
+        OraFine TEXT,
+        Confermato TEXT,
+        Varie TEXT,
+        eseguito TEXT,
+        Privato TEXT,
+        Colore TEXT
       )
     `);
-    console.log('✓ Tabella tblogin creata su TURSO');
+    console.log('✓ Tabella PlanningInterventi creata su TURSO');
 
     // Inserisci dati nel TURSO
-    for (const user of users) {
-      await tursoDati.execute(`
-        INSERT INTO tblogin (idLogin, nome, cognome, email, password, societa, tecnicocod, attivo, typeutente, colore)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `, [
-        user.idLogin,
-        user.nome || '',
-        user.cognome || '',
-        user.email || '',
-        user.password || '',
-        user.societa || '',
-        user.tecnicocod || '',
-        user.attivo || 'S',
-        user.typeutente || '',
-        user.colore || ''
-      ]);
+    let inserted = 0;
+    for (const event of events) {
+      // Formatta data
+      let dataStr = '';
+      if (event.Data) {
+        if (event.Data instanceof Date) {
+          dataStr = event.Data.toISOString().split('T')[0];
+        } else {
+          dataStr = event.Data.toString();
+        }
+      }
+
+      try {
+        await tursoAssistenza.execute(`
+          INSERT INTO PlanningInterventi 
+          (id, Proprietario, Data, Tecnico, Codcliente, Cliente, Oggetto,
+           Giornataintera, OraInizio, OraFine, Confermato, Varie, eseguito, Privato, Colore)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+          event.Id,
+          event.Proprietario || '',
+          dataStr || '',
+          event.Tecnico || '',
+          event.Codcliente || '',
+          event.Cliente || '',
+          event.Oggetto || '',
+          event.Giornataintera || '',
+          event.OraInizio || '',
+          event.OraFine || '',
+          event.Confermato || '',
+          event.Varie || '',
+          event.eseguito || '',
+          event.Privato || '',
+          event.Colore || ''
+        ]);
+        inserted++;
+      } catch (err) {
+        console.log(`  ⚠ ID ${event.Id}: ${err.message.substring(0, 50)}`);
+      }
     }
-    console.log(`✓ Inseriti ${users.length} utenti in TURSO CondivisioneDati`);
+    
+    console.log(`✓ Inseriti ${inserted} appuntamenti in TURSO Assistenza`);
 
     // Chiudi connessione SQL Server
     await pool.close();
 
   } catch (error) {
-    console.error('❌ Errore durante migrazione CondivisioneDati:', error.message);
+    console.error('❌ Errore durante migrazione PlanningInterventi:', error.message);
     throw error;
   }
 }
@@ -121,11 +162,11 @@ async function main() {
     // Test connections prima di iniziare
     await testTursoConnection();
 
-    // Migra CondivisioneDati
-    await migrateCondivisioneDati();
+    // Migra PlanningInterventi da Assistenza
+    await migratePlanningInterventi();
 
     console.log('\n✅ Migrazione completata con successo!');
-    console.log('📊 I dati sono ora su TURSO ed pronti per Vercel');
+    console.log('📊 I dati di Planning sono ora su TURSO ed pronti per il calendario');
 
   } catch (error) {
     console.error('\n❌ Errore fatale durante la migrazione:', error.message);

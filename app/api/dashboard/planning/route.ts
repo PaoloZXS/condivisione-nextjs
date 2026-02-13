@@ -17,9 +17,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Connect to Assistenza database (TURSO - where Planning data is)
+    const dbUrl = process.env.DATABASE_URL_ASSISTENZA;
+    if (!dbUrl) {
+      throw new Error('DATABASE_URL_ASSISTENZA is not configured');
+    }
+    
     const client = createClient({
-      url: process.env.TURSO_ASSISTENZA_URL!,
-      authToken: process.env.TURSO_ASSISTENZA_AUTH_TOKEN!,
+      url: dbUrl,
     });
 
     // Build SQL query - TURSO format

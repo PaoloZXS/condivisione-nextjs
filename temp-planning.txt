@@ -1,0 +1,2 @@
+Msg 207, Level 16, State 1, Server ALESSIA\SQLEXPRESS, Line 1
+Il nome di colonna 'Colore' non è valido.
