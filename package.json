@@ -14,9 +14,12 @@
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.4.0",
+    "date-fns": "^4.1.0",
     "libsql": "^0.5.22",
+    "lucide-react": "^0.564.0",
     "next": "16.1.6",
     "react": "19.2.3",
+    "react-big-calendar": "^1.19.4",
     "react-dom": "19.2.3"
   },
   "devDependencies": {
@@ -28,6 +31,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^19",
+    "@types/react-big-calendar": "^1.16.3",
     "@types/react-dom": "^19",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.6.2",

@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import Sidebar from '@/app/components/Sidebar';
 
 interface PageLayoutProps {
-  title: string;
-  icon: string;
+  title?: string;
+  icon?: string;
   children: React.ReactNode;
 }
 

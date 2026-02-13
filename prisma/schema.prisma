@@ -164,6 +164,26 @@ model Contratto {
 
 // ============ PLANNING & SCHEDULING ============
 
+model PlanningInterventi {
+  id              Int      @id @default(autoincrement())
+  Proprietario    String?
+  Data            DateTime?
+  Tecnico         String?
+  Codcliente      String?
+  Cliente         String?
+  Oggetto         String?
+  Giornataintera  String?  // S/N
+  OraInizio       String?
+  OraFine         String?
+  Confermato      String?  // S/N
+  Varie           String?
+  eseguito        String?  // S/N
+  Privato         String?  // S/N
+  Colore          String?
+
+  @@map("PlanningInterventi")
+}
+
 model PianningTipoIntervento {
   id Int @id @default(autoincrement())
 
