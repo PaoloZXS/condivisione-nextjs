@@ -49,6 +49,7 @@ export default function PlanningPage() {
   const fetchEvents = useCallback(async (date: Date) => {
     setLoading(true);
     try {
+      console.log('🔄 Fetching events for:', format(date, 'MMMM yyyy', { locale: it }));
       // Get month boundaries
       const year = date.getFullYear();
       const month = date.getMonth();
@@ -250,6 +251,9 @@ export default function PlanningPage() {
               events={events}
               startAccessor='start'
               endAccessor='end'
+              defaultDate={currentDate}
+              date={currentDate}
+              onNavigate={setCurrentDate}
               style={{ height: '100%' }}
               onSelectEvent={(event: PlanningEvent) => setSelectedEvent(event)}
               eventPropGetter={(event: PlanningEvent) => eventStyleGetter(event)}
