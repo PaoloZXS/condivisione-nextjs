@@ -39,8 +39,8 @@ interface PlanningEvent extends Event {
 export default function PlanningPage() {
   const [events, setEvents] = useState<PlanningEvent[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<PlanningEvent | null>(null);
-  // Inizia da marzo 2007 (primo mese con dati)
-  const [currentDate, setCurrentDate] = useState(new Date(2007, 2, 1));
+  // Inizia da oggi
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
   const [allTecnici, setAllTecnici] = useState<string[]>([]);
   const [selectedTecnico, setSelectedTecnico] = useState<string>('all');
@@ -164,14 +164,23 @@ export default function PlanningPage() {
 
         {/* Controls */}
         <div className='flex flex-col sm:flex-row gap-4 items-center justify-between bg-white p-4 rounded-lg shadow'>
-          <div className='flex gap-2'>
+          <div className='flex gap-2 items-center flex-wrap'>
             <button
               onClick={() => setCurrentDate(subMonths(currentDate, 1))}
               className='px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-sm font-medium'
             >
               ← Precedente
             </button>
-            <div className='px-6 py-2 bg-gray-100 rounded text-sm font-semibold min-w-max'>
+            <input
+              type="month"
+              value={format(currentDate, 'yyyy-MM')}
+              onChange={(e) => {
+                const [year, month] = e.target.value.split('-');
+                setCurrentDate(new Date(parseInt(year), parseInt(month) - 1, 1));
+              }}
+              className='px-3 py-2 border border-gray-300 rounded text-sm font-medium focus:outline-none focus:border-blue-500'
+            />
+            <div className='px-4 py-2 bg-gray-100 rounded text-sm font-semibold'>
               {format(currentDate, 'MMMM yyyy', { locale: it })}
             </div>
             <button
@@ -179,6 +188,12 @@ export default function PlanningPage() {
               className='px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-sm font-medium'
             >
               Successivo →
+            </button>
+            <button
+              onClick={() => setCurrentDate(new Date())}
+              className='px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium'
+            >
+              Oggi
             </button>
           </div>
 
